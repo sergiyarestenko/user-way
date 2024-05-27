@@ -29,61 +29,83 @@
       image.alt = altText;
     }
 
-    function createModalInputGroup(image) {
-      disableBodyScrolling();
-      const changeAtlGroup = document.createElement("div");
-      changeAtlGroup.id = "change-alt-group";
-      changeAtlGroup.style.cssText =
+    function createChangeAltGroupDiv(div) {
+      div.id = "change-alt-group";
+      div.style.cssText =
         "position:fixed; z-index: 9999; top: 0; right: 0; bottom: 0; left: 0; background:rgba(0,0,0,.1)";
-      changeAtlGroup.addEventListener("click", removeModalInputGroup);
+      div.addEventListener("click", removeChangeAltGroup);
+    }
 
-      const changeAltInput = document.createElement("input");
-
-      changeAltInput.id = "change-alt-input";
-      changeAltInput.type = "text";
-      changeAltInput.value = image.alt;
-      changeAltInput.addEventListener("input", function () {
-        changeImgAlt(image, changeAltInput.value);
+    function createChangeAltInput(input, image) {
+      input.id = "change-alt-input";
+      input.type = "text";
+      input.value = image.alt;
+      input.addEventListener("input", function () {
+        changeImgAlt(image, input.value);
       });
 
       //add style to input
+    }
+
+    function addEnterEventListener(div) {
+      div.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+          removeChangeAltGroup();
+        }
+      });
+    }
+
+    function createChangeAltGroup(image) {
+      disableBodyScrolling();
+
+      const changeAtlGroup = document.createElement("div");
+      createChangeAltGroupDiv(changeAtlGroup);
+
+      const changeAltInput = document.createElement("input");
+      createChangeAltInput(changeAltInput, image);
 
       changeAtlGroup.appendChild(changeAltInput);
 
-      changeAtlGroup.addEventListener("keypress", function (e) {
-        if (e.key === "Enter") {
-          removeModalInputGroup();
-        }
-      });
       document.body.appendChild(changeAtlGroup);
+
+      addEnterEventListener(changeAtlGroup);
+
       changeAltInput.focus();
     }
 
-    function removeModalInputGroup() {
+    function removeChangeAltInput() {
       const changeAltInput = document.getElementById("change-alt-input");
 
       changeAltInput.removeEventListener("input", function () {
         changeImgAlt(image, changeAltInput.value);
       });
       changeAltInput.remove();
+    }
 
+    function removeChangeAltDiv() {
       const changeAtlGroup = document.getElementById("change-alt-group");
-      changeAtlGroup.removeEventListener("click", removeModalInputGroup);
-      
+      changeAtlGroup.removeEventListener("click", removeChangeAltGroup);
+
       changeAtlGroup.removeEventListener("keypress", function () {
         if (e.key === "Enter") {
-          removeModalInputGroup();
+          removeChangeAltGroup();
         }
       });
 
       changeAtlGroup.remove();
-      
+    }
+
+    function removeChangeAltGroup() {
+      removeChangeAltInput();
+
+      removeChangeAltDiv();
+
       enableBodyScrolling();
     }
 
     function addModalInputGroup(image) {
       image.addEventListener("click", function () {
-        createModalInputGroup(image);
+        createChangeAltGroup(image);
       });
     }
 
