@@ -1,11 +1,52 @@
 (function () {
   window.onload = async function () {
-    // temporary disable scroll
+    
+    setAltAttrToImages(document);
+    createMutationObserver();
 
+    //functions
+
+    async function setAltAttrToImages(parentNode) {
+      const images = parentNode.querySelectorAll("img");
+      const imagesLength = images.length;
+      const altTextArray = await getAltArray(imagesLength);
+
+      for (let i = 0; i < imagesLength; i += 1) {
+        const currentImage = images[i];
+        changeImgAlt(currentImage, altTextArray[i]);
+        addModalInputGroup(currentImage);
+      }
+    }
+
+    function createMutationObserver() {
+      let observer = new MutationObserver((mutations) => {
+        for (let i = 0, max = mutations.length; i < max; i += 1) {
+          const nodes = mutations[i].addedNodes;
+          if (nodes.length) {
+            findImgInAddedNodes(nodes);
+          }
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterDataOldValue: true,
+      });
+    }
+
+    function findImgInAddedNodes(nodes) {
+      for (let i = 0, max = nodes.length; i < max; i += 1) {
+        setAltAttrToImages(nodes[i]);
+      }
+    }
+
+    // temporary disable scroll when input is shown
     function disableBodyScrolling() {
       const clientWidthBefore = document.body.clientWidth;
       document.body.style.overflow = "hidden";
 
+      //compensate scrollbar width if exists
       const clientWidthAfter = document.body.clientWidth;
 
       if (clientWidthBefore !== clientWidthAfter) {
@@ -107,16 +148,6 @@
       image.addEventListener("click", function () {
         createChangeAltGroup(image);
       });
-    }
-
-    const images = document.querySelectorAll("img");
-    const imagesLength = images.length;
-    const altTextArray = await getAltArray(imagesLength);
-
-    for (let i = 0; i < imagesLength; i += 1) {
-      const currentImage = images[i];
-      changeImgAlt(currentImage, altTextArray[i]);
-      addModalInputGroup(currentImage);
     }
   };
 })();
