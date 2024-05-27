@@ -1,7 +1,21 @@
 (function () {
   window.onload = async function () {
-    
+
+    //constants
+    const urlForAlts = "https://random-word-api.herokuapp.com/word?number=";
+    const inputPadding = 12;
+    const groupWrapperId = "change-alt-group";
+    const groupWrapperStyle =
+      "position:fixed; z-index: 9999; top: 0; right: 0; bottom: 0; left: 0; background:rgba(0,0,0,.1)";
+    const inputId = "change-alt-input";
+    const inputStyle =
+      "position: absolute; padding: 10px 12px;font-size:1.2rem;";
+
+
+    //set alts on start
     setAltAttrToImages(document);
+
+    //mutationObserver
     createMutationObserver();
 
     //functions
@@ -14,7 +28,7 @@
       for (let i = 0; i < imagesLength; i += 1) {
         const currentImage = images[i];
         changeImgAlt(currentImage, altTextArray[i]);
-        addModalInputGroup(currentImage);
+        addChangeAttInputGroup(currentImage);
       }
     }
 
@@ -62,8 +76,7 @@
     }
 
     function getAltArray(number = 1) {
-      const url = "https://random-word-api.herokuapp.com/word?number=";
-      return fetch(url + number).then((response) => response.json());
+      return fetch(urlForAlts + number).then((response) => response.json());
     }
 
     function changeImgAlt(image, altText) {
@@ -71,21 +84,34 @@
     }
 
     function createChangeAltGroupDiv(div) {
-      div.id = "change-alt-group";
-      div.style.cssText =
-        "position:fixed; z-index: 9999; top: 0; right: 0; bottom: 0; left: 0; background:rgba(0,0,0,.1)";
-      div.addEventListener("click", removeChangeAltGroup);
+      div.id = groupWrapperId;
+      div.style.cssText = groupWrapperStyle;
+      div.addEventListener("click", onWrapperClick);
     }
 
     function createChangeAltInput(input, image) {
-      input.id = "change-alt-input";
+      input.id = inputId;
       input.type = "text";
       input.value = image.alt;
       input.addEventListener("input", function () {
         changeImgAlt(image, input.value);
       });
 
-      //add style to input
+      const inputPosition = findImagePosition(image);
+
+      input.style.cssText = `${inputStyle}left: ${
+        inputPosition.left + inputPadding
+      }px;top: ${inputPosition.top + inputPadding}px; `;
+    }
+
+    function findImagePosition(image) {
+      const imageRect = image.getBoundingClientRect();
+
+      const position = {
+        left: imageRect.left,
+        top: imageRect.top < 0 ? 0 : imageRect.top,
+      };
+      return position;
     }
 
     function addEnterEventListener(div) {
@@ -115,7 +141,7 @@
     }
 
     function removeChangeAltInput() {
-      const changeAltInput = document.getElementById("change-alt-input");
+      const changeAltInput = document.getElementById(inputId);
 
       changeAltInput.removeEventListener("input", function () {
         changeImgAlt(image, changeAltInput.value);
@@ -124,8 +150,8 @@
     }
 
     function removeChangeAltDiv() {
-      const changeAtlGroup = document.getElementById("change-alt-group");
-      changeAtlGroup.removeEventListener("click", removeChangeAltGroup);
+      const changeAtlGroup = document.getElementById(groupWrapperId);
+      changeAtlGroup.removeEventListener("click", onWrapperClick);
 
       changeAtlGroup.removeEventListener("keypress", function () {
         if (e.key === "Enter") {
@@ -136,6 +162,12 @@
       changeAtlGroup.remove();
     }
 
+    function onWrapperClick(e) {
+      if (e.target.id === groupWrapperId) {
+        removeChangeAltGroup();
+      }
+    }
+
     function removeChangeAltGroup() {
       removeChangeAltInput();
 
@@ -144,7 +176,7 @@
       enableBodyScrolling();
     }
 
-    function addModalInputGroup(image) {
+    function addChangeAttInputGroup(image) {
       image.addEventListener("click", function () {
         createChangeAltGroup(image);
       });
